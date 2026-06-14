@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="伝えるボード">
+  <meta name="theme-color" content="#1a2035">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.png">
+  <title>伝えるボード</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .header {
+      background: linear-gradient(135deg, #1a2035, #1a6b8a);
+      padding: 10px 16px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header-icon { font-size: 26px; }
+    .header-title { font-size: 17px; font-weight: 700; letter-spacing: 1px; }
+    .header-sub { font-size: 10px; opacity: 0.7; }
+    .display-panel {
+      margin: 12px 12px 0;
+      min-height: 55vh;
+      border-radius: 20px;
+      border: 3px solid #ccd5de;
+      padding: 20px 16px 12px;
+      background: #fff;
+      box-shadow: 0 6px 28px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: border-color 0.3s;
+    }
+    .display-text {
+      font-size: clamp(32px, 8vw, 56px);
+      font-weight: 800;
+      color: #1a2035;
+      line-height: 1.45;
+      text-align: center;
+      letter-spacing: 1px;
+      white-space: pre-wrap;
+    }
+    .display-placeholder {
+      font-size: 18px;
+      color: #bbc;
+      text-align: center;
+      line-height: 2;
+    }
+    .clear-btn {
+      margin-top: 14px;
+      background: none;
+      border: 1.5px solid #ddd;
+      border-radius: 20px;
+      padding: 5px 18px;
+      font-size: 14px;
+      color: #999;
+      cursor: pointer;
+      display: none;
+    }
+    .mode-tabs {
+      display: flex;
+      margin: 10px 12px 0;
+      gap: 8px;
+    }
+    .mode-tab {
+      flex: 1;
+      padding: 9px 0;
+      border-radius: 10px;
+      border: 2px solid #dde3ea;
+      background: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      color: #889;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .mode-tab.active {
+      background: #1a2035;
+      color: #fff;
+      border-color: #1a2035;
+    }
+    .category-row {
+      display: flex;
+      gap: 8px;
+      padding: 10px 12px 4px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .category-btn {
+      flex: 0 0 auto;
+      padding: 7px 14px;
+      border-radius: 20px;
+      border: 2px solid;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .phrase-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 8px 12px 20px;
+    }
+    .phrase-btn {
+      padding: 14px 8px;
+      border-radius: 12px;
+      border: 2px solid;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      line-height: 1.4;
+      text-align: center;
+      transition: all 0.15s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      font-family: inherit;
+      background: #fff;
+      color: #1a2035;
+    }
+    .voice-panel {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 32px;
+      gap: 20px;
+    }
+    .mic-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: linear-gradient(135deg, #1a6b8a, #0f4d66);
+      box-shadow: 0 0 0 8px rgba(26,107,138,0.15), 0 8px 24px rgba(26,107,138,0.2);
+    }
+    .mic-btn.listening {
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      box-shadow: 0 0 0 14px rgba(231,76,60,0.2), 0 8px 32px rgba(231,76,60,0.3);
+    }
+    .mic-icon { font-size: 48px; line-height: 1; }
+    .mic-label { font-size: 13px; color: #fff; font-weight: 700; text-align: center; line-height: 1.5; }
+    .pulse-row { display: none; gap: 8px; align-items: center; height: 32px; }
+    .pulse-row.active { display: flex; }
+    .pulse-dot {
+      width: 8px; height: 28px; border-radius: 4px;
+      background: #e74c3c;
+      animation: bounce 1.2s ease-in-out infinite;
+    }
+    .pulse-dot:nth-child(2) { animation-delay: 0.2s; }
+    .pulse-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scaleY(0.4); }
+      40% { transform: scaleY(1); }
+    }
+    .text-input-row { display: flex; gap: 8px; width: 100%; }
+    .text-input {
+      flex: 1; padding: 12px 14px; border-radius: 12px;
+      border: 2px solid #ccd5de; font-size: 15px; outline: none; font-family: inherit;
+    }
+    .send-btn {
+      padding: 12px 18px; border-radius: 12px; border: none;
+      background: #1a6b8a; color: #fff; font-size: 15px;
+      font-weight: 700; cursor: pointer; font-family: inherit;
+    }
+    .send-btn:disabled { opacity: 0.4; }
+    .status-msg { font-size: 13px; color: #556; text-align: center; min-height: 20px; }
+    .voice-hint { font-size: 11px; color: #aab; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span class="header-icon">🦻</span>
+    <div>
+      <div class="header-title">伝えるボード</div>
+      <div class="header-sub">リハビリコミュニケーション支援</div>
+    </div>
+  </div>
+
+  <div class="display-panel" id="displayPanel">
+    <div class="display-placeholder" id="placeholder">フレーズを選ぶか<br>音声で話しかけてください</div>
+    <div class="display-text" id="displayText" style="display:none;"></div>
+    <button class="clear-btn" id="clearBtn" onclick="clearDisplay()">✕ クリア</button>
+  </div>
+
+  <div class="mode-tabs">
+    <button class="mode-tab active" id="tabPhrase" onclick="switchMode('phrase')">📋 フレーズ</button>
+    <button class="mode-tab" id="tabVoice" onclick="switchMode('voice')">🎤 音声入力</button>
+  </div>
+
+  <div id="phrasePanel">
+    <div class="category-row" id="categoryRow"></div>
+    <div class="phrase-grid" id="phraseGrid"></div>
+  </div>
+
+  <div class="voice-panel" id="voicePanel">
+    <button class="mic-btn" id="micBtn" onclick="toggleListening()">
+      <span class="mic-icon">🎤</span>
+      <span class="mic-label" id="micLabel">タップして<br>話す</span>
+    </button>
+    <div class="pulse-row" id="pulseRow">
+      <div class="pulse-dot"></div>
+      <div class="pulse-dot"></div>
+      <div class="pulse-dot"></div>
+    </div>
+    <div class="status-msg" id="statusMsg"></div>
+    <div class="text-input-row">
+      <input type="text" class="text-input" id="textInput"
+        placeholder="または文字で入力..."
+        oninput="onTextInput()"
+        onkeydown="if(event.key==='Enter') sendText()" />
+      <button class="send-btn" id="sendBtn" onclick="sendText()" disabled>表示</button>
+    </div>
+    <p class="voice-hint">※ 音声認識は Chrome・Safari で動作します</p>
+  </div>
+
+  <script>
+    const PHRASES = {
+      rehab: {
+        label: "リハビリ指示", color: "#1a6b8a",
+        items: ["これから運動を始めます","ゆっくり動かしてください","止まってください","もう一度やってみましょう","上手にできています","少し休みましょう","力を抜いてください","この動きを10回繰り返します","痛みが出たら教えてください","今日のリハビリはここまでです"],
+      },
+      pain: {
+        label: "疼痛・症状確認", color: "#8a3a1a",
+        items: ["痛みはありますか？","どこが痛いですか？","痛みは10点中何点ですか？","しびれはありますか？","動かすと痛いですか？","安静にしていても痛いですか？","昨日より良くなっていますか？","めまいはありますか？"],
+      },
+      greeting: {
+        label: "声かけ・雑談", color: "#3a6b1a",
+        items: ["こんにちは！","今日の体調はいかがですか？","よく来られましたね","お疲れさまでした","また来週お待ちしています","ゆっくり休んでください","何かご質問はありますか？","天気が良いですね"],
+      },
+    };
+
+    let activeCategory = "rehab";
+    let isListening = false;
+    let recognition = null;
+
+    function init() {
+      renderCategories();
+      renderPhrases();
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(()=>{});
+      }
+    }
+
+    function renderCategories() {
+      const row = document.getElementById("categoryRow");
+      row.innerHTML = "";
+      Object.keys(PHRASES).forEach(key => {
+        const btn = document.createElement("button");
+        btn.className = "category-btn";
+        btn.textContent = PHRASES[key].label;
+        btn.style.borderColor = PHRASES[key].color;
+        btn.style.background = key === activeCategory ? PHRASES[key].color : "#e8ecf0";
+        btn.style.color = key === activeCategory ? "#fff" : "#444";
+        btn.onclick = () => { activeCategory = key; renderCategories(); renderPhrases(); };
+        row.appendChild(btn);
+      });
+    }
+
+    function renderPhrases() {
+      const grid = document.getElementById("phraseGrid");
+      const cat = PHRASES[activeCategory];
+      grid.innerHTML = "";
+      document.getElementById("displayPanel").style.borderColor = cat.color;
+      cat.items.forEach(phrase => {
+        const btn = document.createElement("button");
+        btn.className = "phrase-btn";
+        btn.textContent = phrase;
+        btn.style.borderColor = cat.color;
+        btn.onclick = () => showText(phrase);
+        grid.appendChild(btn);
+      });
+    }
+
+    function showText(text) {
+      document.getElementById("placeholder").style.display = "none";
+      const dt = document.getElementById("displayText");
+      dt.style.display = "block";
+      dt.textContent = text;
+      document.getElementById("clearBtn").style.display = "inline-block";
+      document.querySelectorAll(".phrase-btn").forEach(btn => {
+        btn.style.background = btn.textContent === text ? PHRASES[activeCategory].color : "#fff";
+        btn.style.color = btn.textContent === text ? "#fff" : "#1a2035";
+      });
+    }
+
+    function clearDisplay() {
+      document.getElementById("placeholder").style.display = "block";
+      document.getElementById("displayText").style.display = "none";
+      document.getElementById("clearBtn").style.display = "none";
+      document.querySelectorAll(".phrase-btn").forEach(btn => {
+        btn.style.background = "#fff"; btn.style.color = "#1a2035";
+      });
+      document.getElementById("textInput").value = "";
+      document.getElementById("sendBtn").disabled = true;
+    }
+
+    function switchMode(mode) {
+      document.getElementById("tabPhrase").classList.toggle("active", mode === "phrase");
+      document.getElementById("tabVoice").classList.toggle("active", mode === "voice");
+      document.getElementById("phrasePanel").style.display = mode === "phrase" ? "block" : "none";
+      document.getElementById("voicePanel").style.display = mode === "voice" ? "flex" : "none";
+    }
+
+    function toggleListening() {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        document.getElementById("statusMsg").textContent = "⚠️ 音声認識非対応。下の入力欄をご利用ください。";
+        return;
+      }
+      if (isListening) { recognition && recognition.stop(); setListeningState(false); return; }
+      recognition = new SR();
+      recognition.lang = "ja-JP";
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.onstart = () => { setListeningState(true); document.getElementById("statusMsg").textContent = "聞いています…"; };
+      recognition.onresult = (e) => {
+        let interim = "", final = "";
+        for (let i = 0; i < e.results.length; i++) {
+          if (e.results[i].isFinal) final += e.results[i][0].transcript;
+          else interim += e.results[i][0].transcript;
+        }
+        const text = final || interim;
+        if (text) showText(text);
+        if (final) document.getElementById("statusMsg").textContent = "✅ 認識完了";
+      };
+      recognition.onerror = (e) => {
+        let msg = "エラーが発生しました";
+        if (e.error === "not-allowed") msg = "⚠️ マイクの許可が必要です";
+        else if (e.error === "no-speech") msg = "音声が聞こえませんでした";
+        document.getElementById("statusMsg").textContent = msg;
+        setListeningState(false);
+      };
+      recognition.onend = () => setListeningState(false);
+      recognition.start();
+    }
+
+    function setListeningState(listening) {
+      isListening = listening;
+      const btn = document.getElementById("micBtn");
+      btn.classList.toggle("listening", listening);
+      document.getElementById("micLabel").innerHTML = listening ? "録音中…<br>タップで停止" : "タップして<br>話す";
+      document.querySelector(".mic-icon").textContent = listening ? "⏹" : "🎤";
+      document.getElementById("pulseRow").classList.toggle("active", listening);
+    }
+
+    function onTextInput() {
+      document.getElementById("sendBtn").disabled = !document.getElementById("textInput").value.trim();
+    }
+
+    function sendText() {
+      const val = document.getElementById("textInput").value.trim();
+      if (!val) return;
+      showText(val);
+      document.getElementById("statusMsg").textContent = "";
+    }
+
+    init();
+  </script>
+</body>
+</html>
