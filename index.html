@@ -8,375 +8,492 @@
   <meta name="apple-mobile-web-app-title" content="伝えるボード">
   <meta name="theme-color" content="#1a2035">
   <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icon.png">
   <title>伝えるボード</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body {
-      font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
-      background: #f0f4f8;
-      min-height: 100vh;
-      max-width: 480px;
-      margin: 0 auto;
-    }
-    .header {
-      background: linear-gradient(135deg, #1a2035, #1a6b8a);
-      padding: 10px 16px;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .header-icon { font-size: 26px; }
+    body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: #f0f4f8; min-height: 100vh; max-width: 480px; margin: 0 auto; }
+
+    /* ヘッダー */
+    .header { background: linear-gradient(135deg, #1a2035, #1a6b8a); padding: 10px 16px; color: #fff; display: flex; align-items: center; justify-content: space-between; }
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .header-icon { font-size: 24px; }
     .header-title { font-size: 17px; font-weight: 700; letter-spacing: 1px; }
     .header-sub { font-size: 10px; opacity: 0.7; }
-    .display-panel {
-      margin: 12px 12px 0;
-      min-height: 55vh;
-      border-radius: 20px;
-      border: 3px solid #ccd5de;
-      padding: 20px 16px 12px;
-      background: #fff;
-      box-shadow: 0 6px 28px rgba(0,0,0,0.1);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      transition: border-color 0.3s;
-    }
-    .display-text {
-      font-size: clamp(32px, 8vw, 56px);
-      font-weight: 800;
-      color: #1a2035;
-      line-height: 1.45;
-      text-align: center;
-      letter-spacing: 1px;
-      white-space: pre-wrap;
-    }
-    .display-placeholder {
-      font-size: 18px;
-      color: #bbc;
-      text-align: center;
-      line-height: 2;
-    }
-    .clear-btn {
-      margin-top: 14px;
-      background: none;
-      border: 1.5px solid #ddd;
-      border-radius: 20px;
-      padding: 5px 18px;
-      font-size: 14px;
-      color: #999;
-      cursor: pointer;
-      display: none;
-    }
-    .mode-tabs {
-      display: flex;
-      margin: 10px 12px 0;
-      gap: 8px;
-    }
-    .mode-tab {
-      flex: 1;
-      padding: 9px 0;
-      border-radius: 10px;
-      border: 2px solid #dde3ea;
-      background: #fff;
-      font-size: 14px;
-      font-weight: 700;
-      color: #889;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: inherit;
-    }
-    .mode-tab.active {
-      background: #1a2035;
-      color: #fff;
-      border-color: #1a2035;
-    }
-    .category-row {
-      display: flex;
-      gap: 8px;
-      padding: 10px 12px 4px;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    .category-btn {
-      flex: 0 0 auto;
-      padding: 7px 14px;
-      border-radius: 20px;
-      border: 2px solid;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      white-space: nowrap;
-      font-family: inherit;
-      transition: all 0.2s;
-    }
-    .phrase-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      padding: 8px 12px 20px;
-    }
-    .phrase-btn {
-      padding: 14px 8px;
-      border-radius: 12px;
-      border: 2px solid;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      line-height: 1.4;
-      text-align: center;
-      transition: all 0.15s;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      font-family: inherit;
-      background: #fff;
-      color: #1a2035;
-    }
-    .voice-panel {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      padding: 24px 16px 32px;
-      gap: 20px;
-    }
-    .mic-btn {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      width: 160px;
-      height: 160px;
-      border-radius: 50%;
-      border: none;
-      cursor: pointer;
-      transition: all 0.3s;
-      background: linear-gradient(135deg, #1a6b8a, #0f4d66);
-      box-shadow: 0 0 0 8px rgba(26,107,138,0.15), 0 8px 24px rgba(26,107,138,0.2);
-    }
-    .mic-btn.listening {
-      background: linear-gradient(135deg, #e74c3c, #c0392b);
-      box-shadow: 0 0 0 14px rgba(231,76,60,0.2), 0 8px 32px rgba(231,76,60,0.3);
-    }
-    .mic-icon { font-size: 48px; line-height: 1; }
+    .edit-toggle-btn { padding: 6px 14px; border-radius: 20px; border: 2px solid rgba(255,255,255,0.5); background: transparent; color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+    .edit-toggle-btn.active { background: #e74c3c; border-color: #e74c3c; }
+
+    /* 表示パネル */
+    .display-panel { margin: 12px 12px 0; min-height: 52vh; border-radius: 20px; border: 3px solid #ccd5de; padding: 20px 16px 12px; background: #fff; box-shadow: 0 6px 28px rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: center; align-items: center; transition: border-color 0.3s; }
+    .display-text { font-size: clamp(30px, 8vw, 54px); font-weight: 800; color: #1a2035; line-height: 1.45; text-align: center; letter-spacing: 1px; white-space: pre-wrap; }
+    .display-placeholder { font-size: 17px; color: #bbc; text-align: center; line-height: 2; }
+    .clear-btn { margin-top: 14px; background: none; border: 1.5px solid #ddd; border-radius: 20px; padding: 5px 18px; font-size: 14px; color: #999; cursor: pointer; display: none; }
+
+    /* モード切替 */
+    .mode-tabs { display: flex; margin: 10px 12px 0; gap: 8px; }
+    .mode-tab { flex: 1; padding: 9px 0; border-radius: 10px; border: 2px solid #dde3ea; background: #fff; font-size: 14px; font-weight: 700; color: #889; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+    .mode-tab.active { background: #1a2035; color: #fff; border-color: #1a2035; }
+
+    /* カテゴリ */
+    .category-row { display: flex; gap: 8px; padding: 10px 12px 4px; overflow-x: auto; -webkit-overflow-scrolling: touch; align-items: center; }
+    .category-btn { flex: 0 0 auto; padding: 7px 14px; border-radius: 20px; border: 2px solid; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; font-family: inherit; transition: all 0.2s; }
+    .add-category-btn { flex: 0 0 auto; padding: 7px 14px; border-radius: 20px; border: 2px dashed #aab; background: transparent; color: #889; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; font-family: inherit; }
+
+    /* フレーズグリッド */
+    .phrase-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px 12px 20px; }
+    .phrase-btn { padding: 14px 8px; border-radius: 12px; border: 2px solid; font-size: 14px; font-weight: 600; cursor: pointer; line-height: 1.4; text-align: center; transition: all 0.15s; box-shadow: 0 2px 8px rgba(0,0,0,0.06); font-family: inherit; background: #fff; color: #1a2035; position: relative; }
+    .phrase-btn .delete-dot { display: none; position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%; background: #e74c3c; color: #fff; font-size: 13px; line-height: 20px; text-align: center; font-weight: 700; }
+    .edit-mode .phrase-btn .delete-dot { display: block; }
+    .add-phrase-btn { padding: 14px 8px; border-radius: 12px; border: 2px dashed #aab; background: transparent; color: #889; font-size: 22px; cursor: pointer; font-family: inherit; }
+
+    /* 音声パネル */
+    .voice-panel { display: none; flex-direction: column; align-items: center; padding: 24px 16px 32px; gap: 20px; }
+    .mic-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; width: 150px; height: 150px; border-radius: 50%; border: none; cursor: pointer; transition: all 0.3s; background: linear-gradient(135deg, #1a6b8a, #0f4d66); box-shadow: 0 0 0 8px rgba(26,107,138,0.15); }
+    .mic-btn.listening { background: linear-gradient(135deg, #e74c3c, #c0392b); box-shadow: 0 0 0 14px rgba(231,76,60,0.2); }
+    .mic-icon { font-size: 44px; }
     .mic-label { font-size: 13px; color: #fff; font-weight: 700; text-align: center; line-height: 1.5; }
     .pulse-row { display: none; gap: 8px; align-items: center; height: 32px; }
     .pulse-row.active { display: flex; }
-    .pulse-dot {
-      width: 8px; height: 28px; border-radius: 4px;
-      background: #e74c3c;
-      animation: bounce 1.2s ease-in-out infinite;
-    }
+    .pulse-dot { width: 8px; height: 28px; border-radius: 4px; background: #e74c3c; animation: bounce 1.2s ease-in-out infinite; }
     .pulse-dot:nth-child(2) { animation-delay: 0.2s; }
     .pulse-dot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes bounce {
-      0%, 80%, 100% { transform: scaleY(0.4); }
-      40% { transform: scaleY(1); }
-    }
+    @keyframes bounce { 0%,80%,100%{transform:scaleY(0.4)}40%{transform:scaleY(1)} }
     .text-input-row { display: flex; gap: 8px; width: 100%; }
-    .text-input {
-      flex: 1; padding: 12px 14px; border-radius: 12px;
-      border: 2px solid #ccd5de; font-size: 15px; outline: none; font-family: inherit;
-    }
-    .send-btn {
-      padding: 12px 18px; border-radius: 12px; border: none;
-      background: #1a6b8a; color: #fff; font-size: 15px;
-      font-weight: 700; cursor: pointer; font-family: inherit;
-    }
+    .text-input { flex: 1; padding: 12px 14px; border-radius: 12px; border: 2px solid #ccd5de; font-size: 15px; outline: none; font-family: inherit; }
+    .send-btn { padding: 12px 18px; border-radius: 12px; border: none; background: #1a6b8a; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
     .send-btn:disabled { opacity: 0.4; }
     .status-msg { font-size: 13px; color: #556; text-align: center; min-height: 20px; }
     .voice-hint { font-size: 11px; color: #aab; text-align: center; }
+
+    /* 編集モードバナー */
+    .edit-banner { display: none; background: #fff3cd; border-left: 4px solid #f0a500; margin: 10px 12px 0; border-radius: 10px; padding: 8px 14px; font-size: 12px; color: #856404; }
+    .edit-banner.show { display: block; }
+
+    /* モーダル */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: #fff; border-radius: 20px; padding: 24px 20px; width: 90%; max-width: 380px; }
+    .modal h3 { font-size: 16px; font-weight: 700; color: #1a2035; margin-bottom: 16px; }
+    .modal input, .modal select { width: 100%; padding: 12px 14px; border-radius: 12px; border: 2px solid #ccd5de; font-size: 15px; font-family: inherit; outline: none; margin-bottom: 12px; }
+    .modal-btns { display: flex; gap: 8px; margin-top: 4px; }
+    .modal-btn { flex: 1; padding: 12px; border-radius: 12px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .modal-btn.cancel { background: #f0f4f8; color: #556; }
+    .modal-btn.confirm { background: #1a6b8a; color: #fff; }
+    .modal-btn.danger { background: #e74c3c; color: #fff; }
+
+    /* カテゴリ編集バッジ */
+    .cat-edit-icon { display: none; margin-left: 4px; font-size: 11px; opacity: 0.7; }
+    .edit-mode .cat-edit-icon { display: inline; }
   </style>
 </head>
 <body>
-  <div class="header">
+
+<div class="header">
+  <div class="header-left">
     <span class="header-icon">🦻</span>
     <div>
       <div class="header-title">伝えるボード</div>
       <div class="header-sub">リハビリコミュニケーション支援</div>
     </div>
   </div>
+  <button class="edit-toggle-btn" id="editToggleBtn" onclick="toggleEditMode()">✏️ 編集</button>
+</div>
 
-  <div class="display-panel" id="displayPanel">
-    <div class="display-placeholder" id="placeholder">フレーズを選ぶか<br>音声で話しかけてください</div>
-    <div class="display-text" id="displayText" style="display:none;"></div>
-    <button class="clear-btn" id="clearBtn" onclick="clearDisplay()">✕ クリア</button>
+<div class="edit-banner" id="editBanner">✏️ 編集モード中 — フレーズ・カテゴリの追加・削除・編集ができます</div>
+
+<div class="display-panel" id="displayPanel">
+  <div class="display-placeholder" id="placeholder">フレーズを選ぶか<br>音声で話しかけてください</div>
+  <div class="display-text" id="displayText" style="display:none;"></div>
+  <button class="clear-btn" id="clearBtn" onclick="clearDisplay()">✕ クリア</button>
+</div>
+
+<div class="mode-tabs">
+  <button class="mode-tab active" id="tabPhrase" onclick="switchMode('phrase')">📋 フレーズ</button>
+  <button class="mode-tab" id="tabVoice" onclick="switchMode('voice')">🎤 音声入力</button>
+</div>
+
+<div id="phrasePanel">
+  <div class="category-row" id="categoryRow"></div>
+  <div class="phrase-grid" id="phraseGrid"></div>
+</div>
+
+<div class="voice-panel" id="voicePanel">
+  <button class="mic-btn" id="micBtn" onclick="toggleListening()">
+    <span class="mic-icon">🎤</span>
+    <span class="mic-label" id="micLabel">タップして<br>話す</span>
+  </button>
+  <div class="pulse-row" id="pulseRow">
+    <div class="pulse-dot"></div><div class="pulse-dot"></div><div class="pulse-dot"></div>
   </div>
-
-  <div class="mode-tabs">
-    <button class="mode-tab active" id="tabPhrase" onclick="switchMode('phrase')">📋 フレーズ</button>
-    <button class="mode-tab" id="tabVoice" onclick="switchMode('voice')">🎤 音声入力</button>
+  <div class="status-msg" id="statusMsg"></div>
+  <div class="text-input-row">
+    <input type="text" class="text-input" id="textInput" placeholder="または文字で入力..." oninput="onTextInput()" onkeydown="if(event.key==='Enter') sendText()"/>
+    <button class="send-btn" id="sendBtn" onclick="sendText()" disabled>表示</button>
   </div>
+  <p class="voice-hint">※ 音声認識は Chrome・Safari で動作します</p>
+</div>
 
-  <div id="phrasePanel">
-    <div class="category-row" id="categoryRow"></div>
-    <div class="phrase-grid" id="phraseGrid"></div>
-  </div>
-
-  <div class="voice-panel" id="voicePanel">
-    <button class="mic-btn" id="micBtn" onclick="toggleListening()">
-      <span class="mic-icon">🎤</span>
-      <span class="mic-label" id="micLabel">タップして<br>話す</span>
-    </button>
-    <div class="pulse-row" id="pulseRow">
-      <div class="pulse-dot"></div>
-      <div class="pulse-dot"></div>
-      <div class="pulse-dot"></div>
+<!-- モーダル：フレーズ追加/編集 -->
+<div class="modal-overlay" id="phraseModal">
+  <div class="modal">
+    <h3 id="phraseModalTitle">フレーズを追加</h3>
+    <input type="text" id="phraseInput" placeholder="フレーズを入力" maxlength="30"/>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeModal('phraseModal')">キャンセル</button>
+      <button class="modal-btn confirm" id="phraseModalConfirm" onclick="confirmPhrase()">追加</button>
     </div>
-    <div class="status-msg" id="statusMsg"></div>
-    <div class="text-input-row">
-      <input type="text" class="text-input" id="textInput"
-        placeholder="または文字で入力..."
-        oninput="onTextInput()"
-        onkeydown="if(event.key==='Enter') sendText()" />
-      <button class="send-btn" id="sendBtn" onclick="sendText()" disabled>表示</button>
-    </div>
-    <p class="voice-hint">※ 音声認識は Chrome・Safari で動作します</p>
   </div>
+</div>
 
-  <script>
-    const PHRASES = {
-      rehab: {
-        label: "リハビリ指示", color: "#1a6b8a",
-        items: ["これから運動を始めます","ゆっくり動かしてください","止まってください","もう一度やってみましょう","上手にできています","少し休みましょう","力を抜いてください","この動きを10回繰り返します","痛みが出たら教えてください","今日のリハビリはここまでです"],
-      },
-      pain: {
-        label: "疼痛・症状確認", color: "#8a3a1a",
-        items: ["痛みはありますか？","どこが痛いですか？","痛みは10点中何点ですか？","しびれはありますか？","動かすと痛いですか？","安静にしていても痛いですか？","昨日より良くなっていますか？","めまいはありますか？"],
-      },
-      greeting: {
-        label: "声かけ・雑談", color: "#3a6b1a",
-        items: ["こんにちは！","今日の体調はいかがですか？","よく来られましたね","お疲れさまでした","また来週お待ちしています","ゆっくり休んでください","何かご質問はありますか？","天気が良いですね"],
-      },
+<!-- モーダル：カテゴリ追加/編集 -->
+<div class="modal-overlay" id="categoryModal">
+  <div class="modal">
+    <h3 id="categoryModalTitle">カテゴリを追加</h3>
+    <input type="text" id="categoryNameInput" placeholder="カテゴリ名を入力" maxlength="10"/>
+    <div id="colorPicker" style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeModal('categoryModal')">キャンセル</button>
+      <button class="modal-btn confirm" id="categoryModalConfirm" onclick="confirmCategory()">追加</button>
+    </div>
+  </div>
+</div>
+
+<!-- モーダル：削除確認 -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <h3 id="deleteModalTitle">削除しますか？</h3>
+    <p id="deleteModalMsg" style="font-size:14px;color:#556;margin-bottom:16px;line-height:1.6;"></p>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeModal('deleteModal')">キャンセル</button>
+      <button class="modal-btn danger" onclick="confirmDelete()">削除</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ========== デフォルトデータ ==========
+  const DEFAULT_PHRASES = {
+    rehab: {
+      label: "リハビリ指示", color: "#1a6b8a",
+      items: ["これから運動を始めます","ゆっくり動かしてください","止まってください","もう一度やってみましょう","上手にできています","少し休みましょう","力を抜いてください","この動きを10回繰り返します","痛みが出たら教えてください","今日のリハビリはここまでです"],
+    },
+    pain: {
+      label: "疼痛・症状確認", color: "#8a3a1a",
+      items: ["痛みはありますか？","どこが痛いですか？","痛みは10点中何点ですか？","しびれはありますか？","動かすと痛いですか？","安静にしていても痛いですか？","昨日より良くなっていますか？","めまいはありますか？"],
+    },
+    greeting: {
+      label: "声かけ・雑談", color: "#3a6b1a",
+      items: ["こんにちは！","今日の体調はいかがですか？","よく来られましたね","お疲れさまでした","また来週お待ちしています","ゆっくり休んでください","何かご質問はありますか？","天気が良いですね"],
+    },
+  };
+
+  const COLORS = ["#1a6b8a","#8a3a1a","#3a6b1a","#6b1a6b","#8a6b1a","#1a4d8a","#8a1a3a","#2d6b4a"];
+
+  // ========== 状態 ==========
+  let phrases = loadData();
+  let activeCategory = Object.keys(phrases)[0];
+  let isEditMode = false;
+  let isListening = false;
+  let recognition = null;
+  let editingPhraseIndex = -1;
+  let editingCategoryKey = null;
+  let deleteTarget = null;
+  let selectedColor = COLORS[0];
+
+  // ========== データ保存 ==========
+  function loadData() {
+    try {
+      const saved = localStorage.getItem('rehab-phrases');
+      return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_PHRASES));
+    } catch { return JSON.parse(JSON.stringify(DEFAULT_PHRASES)); }
+  }
+
+  function saveData() {
+    localStorage.setItem('rehab-phrases', JSON.stringify(phrases));
+  }
+
+  // ========== 初期化 ==========
+  function init() {
+    buildColorPicker();
+    renderCategories();
+    renderPhrases();
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+
+  function buildColorPicker() {
+    const picker = document.getElementById('colorPicker');
+    COLORS.forEach(c => {
+      const dot = document.createElement('div');
+      dot.style.cssText = `width:28px;height:28px;border-radius:50%;background:${c};cursor:pointer;border:3px solid transparent;transition:border-color 0.2s;`;
+      dot.onclick = () => {
+        selectedColor = c;
+        document.querySelectorAll('#colorPicker div').forEach(d => d.style.borderColor = 'transparent');
+        dot.style.borderColor = '#1a2035';
+      };
+      if (c === selectedColor) dot.style.borderColor = '#1a2035';
+      picker.appendChild(dot);
+    });
+  }
+
+  // ========== カテゴリ描画 ==========
+  function renderCategories() {
+    const row = document.getElementById('categoryRow');
+    row.innerHTML = '';
+    Object.keys(phrases).forEach(key => {
+      const cat = phrases[key];
+      const btn = document.createElement('button');
+      btn.className = 'category-btn';
+      btn.style.borderColor = cat.color;
+      btn.style.background = key === activeCategory ? cat.color : '#e8ecf0';
+      btn.style.color = key === activeCategory ? '#fff' : '#444';
+      btn.innerHTML = cat.label + '<span class="cat-edit-icon">✏️</span>';
+      btn.onclick = () => {
+        if (isEditMode) { openEditCategory(key); return; }
+        activeCategory = key;
+        renderCategories();
+        renderPhrases();
+      };
+      row.appendChild(btn);
+    });
+
+    // カテゴリ追加ボタン（編集モード時のみ）
+    if (isEditMode) {
+      const addBtn = document.createElement('button');
+      addBtn.className = 'add-category-btn';
+      addBtn.textContent = '＋ カテゴリ';
+      addBtn.onclick = openAddCategory;
+      row.appendChild(addBtn);
+    }
+  }
+
+  // ========== フレーズ描画 ==========
+  function renderPhrases() {
+    const grid = document.getElementById('phraseGrid');
+    const cat = phrases[activeCategory];
+    if (!cat) return;
+    grid.innerHTML = '';
+    document.getElementById('displayPanel').style.borderColor = cat.color;
+
+    cat.items.forEach((phrase, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'phrase-btn';
+      btn.style.borderColor = cat.color;
+
+      const txt = document.createElement('span');
+      txt.textContent = phrase;
+      btn.appendChild(txt);
+
+      // 削除ボタン
+      const del = document.createElement('span');
+      del.className = 'delete-dot';
+      del.textContent = '×';
+      del.onclick = (e) => { e.stopPropagation(); openDeletePhrase(i); };
+      btn.appendChild(del);
+
+      btn.onclick = () => {
+        if (isEditMode) { openEditPhrase(i); return; }
+        showText(phrase);
+      };
+      grid.appendChild(btn);
+    });
+
+    // フレーズ追加ボタン（編集モード時のみ）
+    if (isEditMode) {
+      const addBtn = document.createElement('button');
+      addBtn.className = 'add-phrase-btn';
+      addBtn.textContent = '＋';
+      addBtn.onclick = openAddPhrase;
+      grid.appendChild(addBtn);
+    }
+  }
+
+  // ========== テキスト表示 ==========
+  function showText(text) {
+    document.getElementById('placeholder').style.display = 'none';
+    const dt = document.getElementById('displayText');
+    dt.style.display = 'block';
+    dt.textContent = text;
+    document.getElementById('clearBtn').style.display = 'inline-block';
+  }
+
+  function clearDisplay() {
+    document.getElementById('placeholder').style.display = 'block';
+    document.getElementById('displayText').style.display = 'none';
+    document.getElementById('clearBtn').style.display = 'none';
+    document.getElementById('textInput').value = '';
+    document.getElementById('sendBtn').disabled = true;
+  }
+
+  // ========== 編集モード ==========
+  function toggleEditMode() {
+    isEditMode = !isEditMode;
+    const btn = document.getElementById('editToggleBtn');
+    const banner = document.getElementById('editBanner');
+    const grid = document.getElementById('phraseGrid');
+    btn.textContent = isEditMode ? '✅ 完了' : '✏️ 編集';
+    btn.classList.toggle('active', isEditMode);
+    banner.classList.toggle('show', isEditMode);
+    grid.classList.toggle('edit-mode', isEditMode);
+    renderCategories();
+    renderPhrases();
+  }
+
+  // ========== モーダル：フレーズ追加 ==========
+  function openAddPhrase() {
+    editingPhraseIndex = -1;
+    document.getElementById('phraseModalTitle').textContent = 'フレーズを追加';
+    document.getElementById('phraseInput').value = '';
+    document.getElementById('phraseModalConfirm').textContent = '追加';
+    openModal('phraseModal');
+    setTimeout(() => document.getElementById('phraseInput').focus(), 100);
+  }
+
+  function openEditPhrase(i) {
+    editingPhraseIndex = i;
+    document.getElementById('phraseModalTitle').textContent = 'フレーズを編集';
+    document.getElementById('phraseInput').value = phrases[activeCategory].items[i];
+    document.getElementById('phraseModalConfirm').textContent = '保存';
+    openModal('phraseModal');
+    setTimeout(() => document.getElementById('phraseInput').focus(), 100);
+  }
+
+  function confirmPhrase() {
+    const val = document.getElementById('phraseInput').value.trim();
+    if (!val) return;
+    if (editingPhraseIndex === -1) {
+      phrases[activeCategory].items.push(val);
+    } else {
+      phrases[activeCategory].items[editingPhraseIndex] = val;
+    }
+    saveData();
+    renderPhrases();
+    closeModal('phraseModal');
+  }
+
+  // ========== モーダル：カテゴリ追加/編集 ==========
+  function openAddCategory() {
+    editingCategoryKey = null;
+    document.getElementById('categoryModalTitle').textContent = 'カテゴリを追加';
+    document.getElementById('categoryNameInput').value = '';
+    document.getElementById('categoryModalConfirm').textContent = '追加';
+    selectedColor = COLORS[0];
+    document.querySelectorAll('#colorPicker div').forEach((d, i) => d.style.borderColor = i === 0 ? '#1a2035' : 'transparent');
+    openModal('categoryModal');
+    setTimeout(() => document.getElementById('categoryNameInput').focus(), 100);
+  }
+
+  function openEditCategory(key) {
+    editingCategoryKey = key;
+    document.getElementById('categoryModalTitle').textContent = 'カテゴリを編集';
+    document.getElementById('categoryNameInput').value = phrases[key].label;
+    document.getElementById('categoryModalConfirm').textContent = '保存';
+    selectedColor = phrases[key].color;
+    document.querySelectorAll('#colorPicker div').forEach(d => {
+      d.style.borderColor = d.style.background === selectedColor ? '#1a2035' : 'transparent';
+    });
+    openModal('categoryModal');
+    setTimeout(() => document.getElementById('categoryNameInput').focus(), 100);
+  }
+
+  function confirmCategory() {
+    const name = document.getElementById('categoryNameInput').value.trim();
+    if (!name) return;
+    if (editingCategoryKey) {
+      phrases[editingCategoryKey].label = name;
+      phrases[editingCategoryKey].color = selectedColor;
+    } else {
+      const key = 'cat_' + Date.now();
+      phrases[key] = { label: name, color: selectedColor, items: [] };
+      activeCategory = key;
+    }
+    saveData();
+    renderCategories();
+    renderPhrases();
+    closeModal('categoryModal');
+  }
+
+  // ========== モーダル：削除 ==========
+  function openDeletePhrase(i) {
+    deleteTarget = { type: 'phrase', index: i };
+    document.getElementById('deleteModalTitle').textContent = 'フレーズを削除しますか？';
+    document.getElementById('deleteModalMsg').textContent = `「${phrases[activeCategory].items[i]}」を削除します。`;
+    openModal('deleteModal');
+  }
+
+  function confirmDelete() {
+    if (!deleteTarget) return;
+    if (deleteTarget.type === 'phrase') {
+      phrases[activeCategory].items.splice(deleteTarget.index, 1);
+    }
+    saveData();
+    renderPhrases();
+    closeModal('deleteModal');
+    deleteTarget = null;
+  }
+
+  // ========== モーダル共通 ==========
+  function openModal(id) { document.getElementById(id).classList.add('show'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+  document.querySelectorAll('.modal-overlay').forEach(m => {
+    m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); });
+  });
+
+  // ========== モード切替 ==========
+  function switchMode(mode) {
+    document.getElementById('tabPhrase').classList.toggle('active', mode === 'phrase');
+    document.getElementById('tabVoice').classList.toggle('active', mode === 'voice');
+    document.getElementById('phrasePanel').style.display = mode === 'phrase' ? 'block' : 'none';
+    document.getElementById('voicePanel').style.display = mode === 'voice' ? 'flex' : 'none';
+  }
+
+  // ========== 音声認識 ==========
+  function toggleListening() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { document.getElementById('statusMsg').textContent = '⚠️ 音声認識非対応。下の入力欄をご利用ください。'; return; }
+    if (isListening) { recognition && recognition.stop(); setListeningState(false); return; }
+    recognition = new SR();
+    recognition.lang = 'ja-JP';
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.onstart = () => { setListeningState(true); document.getElementById('statusMsg').textContent = '聞いています…'; };
+    recognition.onresult = (e) => {
+      let interim = '', final = '';
+      for (let i = 0; i < e.results.length; i++) {
+        if (e.results[i].isFinal) final += e.results[i][0].transcript;
+        else interim += e.results[i][0].transcript;
+      }
+      const text = final || interim;
+      if (text) showText(text);
+      if (final) document.getElementById('statusMsg').textContent = '✅ 認識完了';
     };
+    recognition.onerror = (e) => {
+      let msg = 'エラーが発生しました';
+      if (e.error === 'not-allowed') msg = '⚠️ マイクの許可が必要です';
+      else if (e.error === 'no-speech') msg = '音声が聞こえませんでした';
+      document.getElementById('statusMsg').textContent = msg;
+      setListeningState(false);
+    };
+    recognition.onend = () => setListeningState(false);
+    recognition.start();
+  }
 
-    let activeCategory = "rehab";
-    let isListening = false;
-    let recognition = null;
+  function setListeningState(listening) {
+    isListening = listening;
+    document.getElementById('micBtn').classList.toggle('listening', listening);
+    document.getElementById('micLabel').innerHTML = listening ? '録音中…<br>タップで停止' : 'タップして<br>話す';
+    document.querySelector('.mic-icon').textContent = listening ? '⏹' : '🎤';
+    document.getElementById('pulseRow').classList.toggle('active', listening);
+  }
 
-    function init() {
-      renderCategories();
-      renderPhrases();
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(()=>{});
-      }
-    }
+  function onTextInput() { document.getElementById('sendBtn').disabled = !document.getElementById('textInput').value.trim(); }
+  function sendText() {
+    const val = document.getElementById('textInput').value.trim();
+    if (!val) return;
+    showText(val);
+    document.getElementById('statusMsg').textContent = '';
+  }
 
-    function renderCategories() {
-      const row = document.getElementById("categoryRow");
-      row.innerHTML = "";
-      Object.keys(PHRASES).forEach(key => {
-        const btn = document.createElement("button");
-        btn.className = "category-btn";
-        btn.textContent = PHRASES[key].label;
-        btn.style.borderColor = PHRASES[key].color;
-        btn.style.background = key === activeCategory ? PHRASES[key].color : "#e8ecf0";
-        btn.style.color = key === activeCategory ? "#fff" : "#444";
-        btn.onclick = () => { activeCategory = key; renderCategories(); renderPhrases(); };
-        row.appendChild(btn);
-      });
-    }
-
-    function renderPhrases() {
-      const grid = document.getElementById("phraseGrid");
-      const cat = PHRASES[activeCategory];
-      grid.innerHTML = "";
-      document.getElementById("displayPanel").style.borderColor = cat.color;
-      cat.items.forEach(phrase => {
-        const btn = document.createElement("button");
-        btn.className = "phrase-btn";
-        btn.textContent = phrase;
-        btn.style.borderColor = cat.color;
-        btn.onclick = () => showText(phrase);
-        grid.appendChild(btn);
-      });
-    }
-
-    function showText(text) {
-      document.getElementById("placeholder").style.display = "none";
-      const dt = document.getElementById("displayText");
-      dt.style.display = "block";
-      dt.textContent = text;
-      document.getElementById("clearBtn").style.display = "inline-block";
-      document.querySelectorAll(".phrase-btn").forEach(btn => {
-        btn.style.background = btn.textContent === text ? PHRASES[activeCategory].color : "#fff";
-        btn.style.color = btn.textContent === text ? "#fff" : "#1a2035";
-      });
-    }
-
-    function clearDisplay() {
-      document.getElementById("placeholder").style.display = "block";
-      document.getElementById("displayText").style.display = "none";
-      document.getElementById("clearBtn").style.display = "none";
-      document.querySelectorAll(".phrase-btn").forEach(btn => {
-        btn.style.background = "#fff"; btn.style.color = "#1a2035";
-      });
-      document.getElementById("textInput").value = "";
-      document.getElementById("sendBtn").disabled = true;
-    }
-
-    function switchMode(mode) {
-      document.getElementById("tabPhrase").classList.toggle("active", mode === "phrase");
-      document.getElementById("tabVoice").classList.toggle("active", mode === "voice");
-      document.getElementById("phrasePanel").style.display = mode === "phrase" ? "block" : "none";
-      document.getElementById("voicePanel").style.display = mode === "voice" ? "flex" : "none";
-    }
-
-    function toggleListening() {
-      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SR) {
-        document.getElementById("statusMsg").textContent = "⚠️ 音声認識非対応。下の入力欄をご利用ください。";
-        return;
-      }
-      if (isListening) { recognition && recognition.stop(); setListeningState(false); return; }
-      recognition = new SR();
-      recognition.lang = "ja-JP";
-      recognition.continuous = false;
-      recognition.interimResults = true;
-      recognition.onstart = () => { setListeningState(true); document.getElementById("statusMsg").textContent = "聞いています…"; };
-      recognition.onresult = (e) => {
-        let interim = "", final = "";
-        for (let i = 0; i < e.results.length; i++) {
-          if (e.results[i].isFinal) final += e.results[i][0].transcript;
-          else interim += e.results[i][0].transcript;
-        }
-        const text = final || interim;
-        if (text) showText(text);
-        if (final) document.getElementById("statusMsg").textContent = "✅ 認識完了";
-      };
-      recognition.onerror = (e) => {
-        let msg = "エラーが発生しました";
-        if (e.error === "not-allowed") msg = "⚠️ マイクの許可が必要です";
-        else if (e.error === "no-speech") msg = "音声が聞こえませんでした";
-        document.getElementById("statusMsg").textContent = msg;
-        setListeningState(false);
-      };
-      recognition.onend = () => setListeningState(false);
-      recognition.start();
-    }
-
-    function setListeningState(listening) {
-      isListening = listening;
-      const btn = document.getElementById("micBtn");
-      btn.classList.toggle("listening", listening);
-      document.getElementById("micLabel").innerHTML = listening ? "録音中…<br>タップで停止" : "タップして<br>話す";
-      document.querySelector(".mic-icon").textContent = listening ? "⏹" : "🎤";
-      document.getElementById("pulseRow").classList.toggle("active", listening);
-    }
-
-    function onTextInput() {
-      document.getElementById("sendBtn").disabled = !document.getElementById("textInput").value.trim();
-    }
-
-    function sendText() {
-      const val = document.getElementById("textInput").value.trim();
-      if (!val) return;
-      showText(val);
-      document.getElementById("statusMsg").textContent = "";
-    }
-
-    init();
-  </script>
+  init();
+</script>
 </body>
 </html>
